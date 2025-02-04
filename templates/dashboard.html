@@ -1,0 +1,66 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+    <div class="bg-white rounded-lg shadow-xl p-6">
+        <!-- Header -->
+        <div class="flex items-center mb-6">
+            <svg class="h-8 w-8 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+            </svg>
+            <h1 class="text-2xl font-bold ml-2">Patient Monitor</h1>
+            <a href="{{ url_for('logout') }}" class="ml-auto text-red-500 hover:text-red-700">Logout</a>
+        </div>
+
+        <!-- Vital Signs Sliders -->
+        <div class="space-y-8">
+            {% for key, vital in vitals.items() %}
+            <div class="space-y-2">
+                <div class="flex justify-between">
+                    <span class="text-gray-700">{{ vital.name }}</span>
+                    <span class="text-red-500 font-medium" id="value-{{ key }}">{{ vital.value }}</span>
+                </div>
+                <div class="slider-container">
+                    <input type="range" min="{{ vital.min }}" max="{{ vital.max }}" value="{{ vital.value }}" class="slider w-full" id="slider-{{ key }}" data-key="{{ key }}" oninput="updateSliderValue(event)">
+                </div>
+                <div class="flex justify-between text-sm text-gray-500">
+                    <span>{{ vital.min }}</span>
+                    <span>{{ vital.max }}</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Summary Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mt-8">
+            {% for key, vital in vitals.items() %}
+            <div class="text-center p-4 bg-gray-50 rounded-lg">
+                <div class="text-3xl font-bold">{{ vital.value }}</div>
+                <div class="flex justify-center items-center {% if vital.change >= 0 %}text-green-500{% else %}text-red-500{% endif %}">
+                    {% if vital.change >= 0 %}↑{% else %}↓{% endif %}
+                    {{ '%0.2f'|format(vital.change|abs) }}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<script>
+    // Function to update the slider value displayed and apply custom background
+    function updateSliderValue(event) {
+        const slider = event.target;
+        const value = slider.value;
+        const key = slider.getAttribute('data-key');
+        const max = slider.max;
+
+        // Update the displayed value
+        document.getElementById('value-' + key).textContent = value;
+
+        // Set the background to make the slider look wider towards the end
+        const percentage = (value - slider.min) / (max - slider.min) * 100;
+        slider.style.background = `linear-gradient(to right, #007BFF ${percentage}%, #e0e0e0 ${percentage}%)`;
+    }
+</script>
+
+{% endblock %}
